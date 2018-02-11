@@ -24,3 +24,8 @@ or
 python3 predict.py --weights dyna_parameters_IterEnd
 ```
 
+You can use your own datasets with these commands ```--train_file```,```--test_file``` and ```--w2v_file```. <br>
+```bash
+python3 train.py --type_model 0 --train_file your_path/your_train_data --w2v_file your_path/your_w2v
+python3 predict.py --test_file your_path/your_test_data --w2v_file your_path/your_w2v --weights static_parameters_IterEnd 
+```
