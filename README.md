@@ -20,8 +20,7 @@ python3 train.py --type_model 0
 ### predict 
 ```bash
 python3 predict.py --weights static_parameters_IterEnd
-```
-#### or 
+or 
 ```bash
 python3 predict.py --weights dyna_parameters_IterEnd
 ```
