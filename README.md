@@ -6,7 +6,7 @@
 * CUDA 8.0
 
 ## Getting Started
-
+```bashdata``` folder contains only training sets, test sets, and vector files for the example. You can use your own data set, but must be consistent with the data format in the sample file, if you do not want to make changes to the code.
 ### train static model
 ```bash
 python3 train.py --type_model 1
