@@ -15,11 +15,12 @@ def init_command_line(argv):
 	from argparse import ArgumentParser
 	usage = "train"
 	description = ArgumentParser(usage)
-	description.add_argument("--train_data", type=int, default=1)
+	description.add_argument("--w2v_file", type=str, default="./data/train_200e.w2v")
+	description.add_argument("--train_file", type=str, default="./data/train_sessions.txt")
 
 	description.add_argument("--max_context_size", type=int, default=9)
 	description.add_argument("--batch_size", type=int, default=80)
-	description.add_argument("--hidden_size", type=int, default=512)
+	description.add_argument("--hidden_size", type=int, default=1024)
 	description.add_argument("--max_senten_len", type=int, default=15)
 	description.add_argument("--type_model", type=int, default=1)
 
@@ -37,16 +38,8 @@ def init_command_line(argv):
 
 opts = init_command_line(sys.argv[1:])
 print ("Configure:")
-if opts.train_data:
-	print (" Opensubtitle dataset for training")
-	train_file = "./data/open_train_sessions.txt"
-	w2v_file = "./data/open_train_all_100e.w2v"
-else:
-	print (" Ubuntu dataset for training")
-	train_file = "./data/ubuntu_train_sessions.txt"
-	w2v_file = "./data/ubuntu_train_all_100e.w2v"
-print (" train_file:",train_file)
-print (" w2v_file:",w2v_file)
+print (" train_file:",opts.train_file)
+print (" w2v_file:",opts.w2v_file)
 
 print (" max_context_size:",opts.max_context_size)
 print (" batch_size:",opts.batch_size)
@@ -110,15 +103,9 @@ def train_model(word2index,ini_idx,corpus_pairs,model,model_optimizer,criterion,
 		if save_model and epoch_avg_loss < state_loss:
 			print ("save model...")
 			if opts.type_model:
-				if opts.train_data:
-					torch.save(model.state_dict(), "./static_open_parameters_IterEnd")
-				else:
-					torch.save(model.state_dict(), "./static_ubu_parameters_IterEnd")
+				torch.save(model.state_dict(), "./static_parameters_IterEnd")
 			else:
-				if opts.train_data:
-					torch.save(model.state_dict(), "./dyna_open_parameters_IterEnd")
-				else:
-					torch.save(model.state_dict(), "./dyna_ubu_parameters_IterEnd")
+				torch.save(model.state_dict(), "./dyna_parameters_IterEnd")
 			state_loss = epoch_avg_loss
 
 		print ("Iteration time:",time.time()-t0)
@@ -130,12 +117,12 @@ if __name__ == '__main__':
 	unk_char = '<unk>'
 	t0 = time.time()
 	print ("loading word2vec...")
-	ctable = W2vCharacterTable(w2v_file,ini_char,unk_char)
+	ctable = W2vCharacterTable(opts.w2v_file,ini_char,unk_char)
 	print(" dict size:",ctable.getDictSize())
 	print (" emb size:",ctable.getEmbSize())
 	print ("")
 
-	ctable,corpus_pairs = readingData(ctable,train_file,opts.max_senten_len,opts.max_context_size)
+	ctable,corpus_pairs = readingData(ctable,opts.train_file,opts.max_senten_len,opts.max_context_size)
 	print (time.time()-t0)
 	print ("")
 

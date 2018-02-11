@@ -16,11 +16,12 @@ def init_command_line(argv):
 	from argparse import ArgumentParser
 	usage = "train"
 	description = ArgumentParser(usage)
-	description.add_argument("--test_data", type=int, default=1)
+	description.add_argument("--w2v_file", type=str, default="./data/train_200e.w2v")
+	description.add_argument("--test_file", type=str, default="./data/test_sessions.txt")
 	
 	description.add_argument("--max_context_size", type=int, default=9)
 	description.add_argument("--batch_size", type=int, default=80)
-	description.add_argument("--hidden_size", type=int, default=512)
+	description.add_argument("--hidden_size", type=int, default=1024)
 	description.add_argument("--max_senten_len", type=int, default=15)
 	description.add_argument("--type_model", type=int, default=1)
 
@@ -32,16 +33,8 @@ def init_command_line(argv):
 
 opts = init_command_line(sys.argv[1:])
 print ("Configure:")
-if opts.test_data:
-	print (" Opensubtitle dataset for testing")
-	test_file = "./data/open_test_sessions.txt"
-	w2v_file = "./data/open_train_all_100e.w2v"
-else:
-	print (" Ubuntu dataset for testing")
-	test_file = "./data/ubuntu_test_sessions.txt"
-	w2v_file = "./data/ubuntu_train_all_100e.w2v"
-print (" test_file:",test_file)
-print (" w2v_file:",w2v_file)
+print (" test_file:",opts.test_file)
+print (" w2v_file:",opts.w2v_file)
 
 print (" max_context_size:",opts.max_context_size)
 print (" batch_size:",opts.batch_size)
@@ -58,19 +51,18 @@ print (" teach_forcing:",opts.teach_forcing)
 print (" weights:",opts.weights)
 print ("")
 
-def readingTestCorpus(test_file_path):
+def readingTestCorpus(test_file):
 	print ("reading...")
-	test_file = open(test_file_path,'r')
-	list_pairs = []
-	tmp_pair = []
-	for line in test_file:
-		line = line.strip('\n')
-		if line == sub:
-			list_pairs.append(tmp_pair)
-			tmp_pair = []
-		else:
-			tmp_pair.append(line)
-	test_file.close()
+	with open(test_file,'r') as file:
+		list_pairs = []
+		tmp_pair = []
+		for line in file:
+			line = line.strip('\n')
+			if line == sub:
+				list_pairs.append(tmp_pair)
+				tmp_pair = []
+			else:
+				tmp_pair.append(line)
 
 	test_contexts = []
 	test_replys = []
@@ -84,8 +76,6 @@ def readingTestCorpus(test_file_path):
 			min_con_size = min(len(pair[0:-1]),min_con_size)
 		else:
 			pass
-	print (max_con_size)
-	print (min_con_size)
 	return test_contexts,test_replys
 
 def preProcess(word2index,test_contexts,unk_char,ini_char,max_senten_len,max_context_size):
@@ -131,7 +121,7 @@ if __name__ == '__main__':
 	unk_char = '<unk>'
 	t0 = time.time()
 	print ("loading word2vec...")
-	ctable = W2vCharacterTable(w2v_file,ini_char,unk_char)
+	ctable = W2vCharacterTable(opts.w2v_file,ini_char,unk_char)
 	print(" dict size:",ctable.getDictSize())
 	print (" emb size:",ctable.getEmbSize())
 	print (time.time()-t0)
@@ -151,7 +141,7 @@ if __name__ == '__main__':
 		print ("No model parameters!")
 		exit()
 
-	test_contexts,test_replys = readingTestCorpus(test_file)
+	test_contexts,test_replys = readingTestCorpus(opts.test_file)
 	print ("len(test_contexts):",len(test_contexts))
 	print ("len(test_replys):",len(test_replys))
 
@@ -167,8 +157,8 @@ if __name__ == '__main__':
 	print ("writing...")
 	if not os.path.exists('./result/'):
 		os.mkdir('./result/')
-	pred_res_file = open("./result/open_pred_result",'w')
-	pred_ans_file = open("./result/open_pred_answer",'w')
+	pred_res_file = open("./result/pred_result",'w')
+	pred_ans_file = open("./result/pred_answer",'w')
 	for idx,senten in enumerate(predict_sentences):
 		test_context = test_contexts[idx]
 		for test_post in test_context:

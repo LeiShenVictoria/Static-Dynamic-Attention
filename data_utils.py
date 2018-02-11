@@ -9,9 +9,9 @@ import gc
 
 sub = '-'*20
 class W2vCharacterTable(object):
-	def __init__(self, w2v_path, ini_char = '</i>', unk_char='<unk>'):
+	def __init__(self, w2v_file, ini_char = '</i>', unk_char='<unk>'):
 		super(W2vCharacterTable, self).__init__()
-		w2v_file = open(w2v_path,'r')
+		
 		self._dict_size = 0
 		self._emb_size = 0
 		self._word2index = {}
@@ -21,18 +21,18 @@ class W2vCharacterTable(object):
 
 		list_emb = []
 		idx = 0
-		for line in w2v_file:
-			line_list = line.strip().split(' ')
-			if len(line_list) == 2:
-				self._dict_size = int(line_list[0])
-				self._emb_size = int(line_list[1])
-			else:
-				self._word2index[line_list[0]] = idx
-				self._index2word[idx] = line_list[0]
-				tmp_emb = [float(item) for item in line_list[1:]]
-				list_emb.append(torch.FloatTensor(tmp_emb).unsqueeze(0))
-				idx += 1
-		w2v_file.close()
+		with open(w2v_file,'r') as file:
+			for line in file:
+				line_list = line.strip().split(' ')
+				if len(line_list) == 2:
+					self._dict_size = int(line_list[0])
+					self._emb_size = int(line_list[1])
+				else:
+					self._word2index[line_list[0]] = idx
+					self._index2word[idx] = line_list[0]
+					tmp_emb = [float(item) for item in line_list[1:]]
+					list_emb.append(torch.FloatTensor(tmp_emb).unsqueeze(0))
+					idx += 1
 
 		if self._unk_char not in self._word2index:
 			self._word2index[self._unk_char] = self._dict_size
@@ -101,17 +101,16 @@ def paddingPairs(corpus_pairs,max_senten_len,max_context_size):
 	return padded_pairs
 
 def readingCorpus(train_file):
-	train_file = open(train_file,'r')
-	list_pairs = []
-	tmp_pair = []
-	for line in train_file:
-		line = line.strip('\n')
-		if line == sub:
-			list_pairs.append(tmp_pair)
-			tmp_pair = []
-		else:
-			tmp_pair.append(line)
-	train_file.close()
+	with open(train_file,'r') as file:
+		list_pairs = []
+		tmp_pair = []
+		for line in file:
+			line = line.strip('\n')
+			if line == sub:
+				list_pairs.append(tmp_pair)
+				tmp_pair = []
+			else:
+				tmp_pair.append(line)
 
 	corpus_pairs = []
 	corpus_pair = []
