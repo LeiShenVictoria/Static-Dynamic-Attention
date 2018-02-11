@@ -8,7 +8,8 @@
 ## Getting Started
 
 The ```data``` folder contains only training sets, test sets, and word2vec files for the example. <br>
-You can use your own dataset, but it must be consistent with the data format in the sample file, if you do not want to make changes to the code.
+You can use your own dataset, but it must be consistent with the data format in the sample file, if you do not want to make changes to the code. <br>
+The w2v file we use is stored as text, if your w2v file is binary storage, you can choose to convert the file or modify the code.
 ### train static model
 ```bash
 python3 train.py  --type_model 1
